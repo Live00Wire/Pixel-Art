@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>>L Sprite Studio</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-panel: #252526;
+            --border-color: #3c3c3c;
+            --text-main: #d4d4d4;
+            --text-dim: #858585;
+            --syntax-blue: #569cd6;
+            --syntax-orange: #ce9178;
+            --syntax-green: #b5cea8;
+            --syntax-purple: #c586c0;
+            --btn-active: #007acc;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100vh;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Consolas', 'Courier New', monospace;
+            display: flex; flex-direction: column;
+            overflow: hidden; user-select: none;
+        }
+
+        .studio-layout {
+            flex-grow: 1;
+            display: flex;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
+            padding: 15px; box-sizing: border-box;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            font-size: 12px; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 10px; display: flex; justify-content: space-between;
+        }
+
+        .tools-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        .tools-grid-3 {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+        }
+        .tool-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px; border-radius: 4px;
+            cursor: pointer; text-align: center;
+            font-size: 16px; transition: background 0.2s;
+        }
+        .tool-btn:hover { background: rgba(255,255,255,0.1); }
+        .tool-btn.active { 
+            background: var(--btn-active); 
+            border-color: transparent; 
+            box-shadow: 0 0 10px rgba(0, 122, 204, 0.5);
+        }
+
+        .io-btn {
+            font-size: 13px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .io-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .export-btn {
+            grid-column: span 2; 
+        }
+
+        input[type=number].tool-btn {
+            background: rgba(0,0,0,0.2);
+            color: var(--syntax-blue);
+            font-family: inherit;
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            padding: 8px;
+        }
+        input[type=number].tool-btn:focus { border-color: var(--syntax-blue); }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 100%; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            height: 16px; width: 16px; border-radius: 50%;
+            background: var(--syntax-blue); cursor: pointer; margin-top: -6px;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: var(--border-color);
+            border-radius: 2px;
+        }
+        input[type=range]:focus { outline: none; }
+
+        .color-picker-row {
+            display: flex; gap: 8px; align-items: center; margin-bottom: 15px;
+        }
+        #color-wheel {
+            width: 40px; height: 32px; border: 1px solid var(--border-color);
+            border-radius: 4px; cursor: pointer; padding: 0; background: var(--bg-panel);
+        }
+        #color-wheel::-webkit-color-swatch-wrapper { padding: 2px; }
+        #color-wheel::-webkit-color-swatch { border: 1px solid var(--border-color); border-radius: 2px; }
+        
+        #hex-input {
+            flex-grow: 1; height: 32px; background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color); border-radius: 4px;
+            color: var(--syntax-green); font-family: monospace; font-size: 14px;
+            padding: 0 8px; box-sizing: border-box; outline: none; text-transform: uppercase;
+        }
+        #hex-input:focus { border-color: var(--syntax-blue); }
+
+        .palette-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;
+        }
+        .color-swatch {
+            aspect-ratio: 1; border-radius: 4px;
+            cursor: pointer; border: 2px solid transparent;
+            box-sizing: border-box;
+        }
+        .color-swatch.active {
+            border-color: white;
+            box-shadow: 0 0 8px rgba(255,255,255,0.6);
+        }
+        .recent-empty {
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed rgba(255,255,255,0.1);
+            cursor: default;
+        }
+
+        .canvas-container {
+            flex-grow: 1;
+            display: flex; justify-content: center; align-items: center;
+            background-color: var(--bg-dark);
+            padding: 40px; overflow: auto;
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        .workspace-wrapper {
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            background-color: var(--bg-dark);
+            background-image:
+                linear-gradient(45deg, #2d2d2d 25%, transparent 25%),
+                linear-gradient(-45deg, #2d2d2d 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #2d2d2d 75%),
+                linear-gradient(-45deg, transparent 75%, #2d2d2d 75%);
+        }
+
+        .sprite-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            image-rendering: pixelated;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="studio-layout">
+        
+        <aside class="sidebar">
+            <section>
+                <div class="panel-header">File_I/O</div>
+                <div class="tools-grid">
+                    <button class="tool-btn io-btn" onclick="saveSprite()" style="color: var(--syntax-green);" title="Save Project (.ldevsprite)">💾 Save</button>
+                    <button class="tool-btn io-btn" onclick="document.getElementById('file-upload').click()" style="color: var(--syntax-orange);" title="Load Project (.ldevsprite)">📂 Load</button>
+                    <button class="tool-btn io-btn export-btn" onclick="exportPNG()" style="color: var(--syntax-purple);" title="Export to PNG">🖼️ Export PNG</button>
+                    <input type="file" id="file-upload" accept=".ldevsprite" style="display: none;" onchange="loadSprite(event)">
+                </div>
+            </section>
+
+            <section>
+                <div class="panel-header">Canvas_Dimensions</div>
+                <div class="tools-grid-3" style="grid-template-columns: 1fr 1fr auto; align-items: center;">
+                    <input type="number" id="grid-w-input" class="tool-btn" value="32" min="1" max="128" title="Width">
+                    <input type="number" id="grid-h-input" class="tool-btn" value="32" min="1" max="128" title="Height">
+                    <button class="tool-btn io-btn" onclick="applyCustomSize()" style="color: var(--syntax-blue); padding: 10px;">Apply</button>
+                </div>
+            </section>
+
+            <section>
+                <div class="panel-header">History</div>
+                <div class="tools-grid">
+                    <button class="tool-btn action-btn" data-action="undo" title="Undo (Ctrl+Z)" style="color: var(--text-dim);">↶ Undo</button>
+                    <button class="tool-btn action-btn" data-action="redo" title="Redo (Ctrl+Y)" style="color: var(--text-dim);">↷ Redo</button>
+                </div>
+            </section>
+
+            <section>
+                <div class="panel-header">Execution_Tools</div>
+                <div class="tools-grid-3">
+                    <button class="tool-btn active draw-tool-btn" data-tool="pencil" title="Pencil (P)">✎</button>
+                    <button class="tool-btn draw-tool-btn" data-tool="eraser" title="Eraser (E)">💧</button>
+                    <button class="tool-btn draw-tool-btn" data-tool="fill" title="Fill Bucket (F)">🌅</button>
+                </div>
+                <button class="tool-btn action-btn" data-action="clear" title="Clear Canvas" style="width: 100%; margin-top: 8px;">🗑 Clear Canvas</button>
+            </section>
+
+            <section>
+                <div class="panel-header">
+                    Brush_Size 
+                    <span id="brush-size-label" style="color: var(--syntax-blue);">1px</span>
+                </div>
+                <div style="padding: 0 5px;">
+                    <input type="range" id="brush-size" min="1" max="10" value="1">
+                </div>
+            </section>
+
+            <section>
+                <div class="panel-header">Custom_Color</div>
+                <div class="color-picker-row">
+                    <input type="color" id="color-wheel" value="#000000" title="Open Color Wheel">
+                    <input type="text" id="hex-input" value="#000000" maxlength="7" title="Hex Code">
+                </div>
+
+                <div class="panel-header">Recently_Used</div>
+                <div class="palette-grid" id="recent-palette" style="margin-bottom: 15px;">
+                </div>
+
+                <div class="panel-header">Presets</div>
+                <div class="palette-grid" id="palette">
+                    <div class="color-swatch active" style="background: #000000;" data-color="#000000"></div>
+                    <div class="color-swatch" style="background: #1D2B53;" data-color="#1D2B53"></div>
+                    <div class="color-swatch" style="background: #7E2553;" data-color="#7E2553"></div>
+                    <div class="color-swatch" style="background: #008751;" data-color="#008751"></div>
+                    <div class="color-swatch" style="background: #AB5236;" data-color="#AB5236"></div>
+                    <div class="color-swatch" style="background: #5F574F;" data-color="#5F574F"></div>
+                    <div class="color-swatch" style="background: #C2C3C7;" data-color="#C2C3C7"></div>
+                    <div class="color-swatch" style="background: #FFF1E8;" data-color="#FFF1E8"></div>
+                    <div class="color-swatch" style="background: #FF004D;" data-color="#FF004D"></div>
+                    <div class="color-swatch" style="background: #FFA300;" data-color="#FFA300"></div>
+                    <div class="color-swatch" style="background: #FFEC27;" data-color="#FFEC27"></div>
+                    <div class="color-swatch" style="background: #00E436;" data-color="#00E436"></div>
+                    <div class="color-swatch" style="background: #29ADFF;" data-color="#29ADFF"></div>
+                    <div class="color-swatch" style="background: #83769C;" data-color="#83769C"></div>
+                    <div class="color-swatch" style="background: #FF77A8;" data-color="#FF77A8"></div>
+                    <div class="color-swatch" style="background: #FFCCAA;" data-color="#FFCCAA"></div>
+                </div>
+            </section>
+
+        </aside>
+
+        <main class="canvas-container">
+            <div id="workspace" class="workspace-wrapper"></div>
+        </main>
+
+    </div>
+
+    <script>
+        const app = {
+            projects: [],
+            activeProjectIndex: -1,
+            tool: 'pencil',
+            color: '#000000',
+            brushSize: 1,
+            recentColors: [],
+            isDrawing: false,
+            
+            get activeProject() {
+                return this.activeProjectIndex >= 0 ? this.projects[this.activeProjectIndex] : null;
+            }
+        };
+
+        class Layer {
+            constructor(width, height, name) {
+                this.id = Date.now() + Math.floor(Math.random() * 1000);
+                this.name = name;
+                this.visible = true;
+                this.locked = false;
+                
+                this.canvas = document.createElement('canvas');
+                this.canvas.width = width;
+                this.canvas.height = height;
+                this.canvas.className = 'sprite-layer';
+                
+                this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
+            }
+
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+
+        class SpriteProject {
+            constructor(width, height, name = "Untitled") {
+                this.id = Date.now();
+                this.name = name;
+                this.width = width;
+                this.height = height;
+                
+                this.layers = [new Layer(width, height, "Layer 1")];
+                this.activeLayerIndex = 0;
+                
+                this.historyStack = [];
+                this.historyIndex = -1;
+                this.maxHistory = 50;
+            }
+
+            get activeLayer() {
+                return this.layers[this.activeLayerIndex];
+            }
+
+            pushState() {
+                this.historyIndex++;
+                this.historyStack.length = this.historyIndex;
+                
+                const stateSnapshot = this.layers.map(layer => ({
+                    id: layer.id,
+                    imageData: layer.ctx.getImageData(0, 0, this.width, this.height)
+                }));
+                
+                this.historyStack.push(stateSnapshot);
+
+                if (this.historyStack.length > this.maxHistory) {
+                    this.historyStack.shift();
+                    this.historyIndex--;
+                }
+            }
+
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.restoreState(this.historyStack[this.historyIndex]);
+                }
+            }
+
+            redo() {
+                if (this.historyIndex < this.historyStack.length - 1) {
+                    this.historyIndex++;
+                    this.restoreState(this.historyStack[this.historyIndex]);
+                }
+            }
+
+            restoreState(stateSnapshot) {
+                stateSnapshot.forEach(savedLayer => {
+                    const layer = this.layers.find(l => l.id === savedLayer.id);
+                    if (layer) {
+                        layer.ctx.putImageData(savedLayer.imageData, 0, 0);
+                    }
+                });
+            }
+        }
+
+        const workspace = document.getElementById('workspace');
+        const drawToolBtns = document.querySelectorAll('.draw-tool-btn');
+        const actionBtns = document.querySelectorAll('.action-btn');
+        const colorWheel = document.getElementById('color-wheel');
+        const hexInput = document.getElementById('hex-input');
+        const recentPalette = document.getElementById('recent-palette');
+        const presetPalette = document.getElementById('palette');
+        const gridWInput = document.getElementById('grid-w-input');
+        const gridHInput = document.getElementById('grid-h-input');
+        const brushSizeSlider = document.getElementById('brush-size');
+        const brushSizeLabel = document.getElementById('brush-size-label');
+
+        function renderWorkspace() {
+            const project = app.activeProject;
+            if (!project) return;
+
+            workspace.style.width = '512px';
+            workspace.style.height = '512px';
+
+            const maxDim = Math.max(project.width, project.height);
+            const pxSize = 512 / maxDim; 
+            const checkerSize = pxSize * 2;
+            
+            workspace.style.backgroundSize = `${checkerSize}px ${checkerSize}px`;
+            workspace.style.backgroundPosition = `0 0, 0 ${pxSize}px, ${pxSize}px ${pxSize}px, ${pxSize}px 0`;
+
+            workspace.innerHTML = '';
+            project.layers.forEach(layer => {
+                workspace.appendChild(layer.canvas);
+                layer.canvas.style.display = layer.visible ? 'block' : 'none';
+            });
+        }
+
+        function init() {
+            const defaultProject = new SpriteProject(32, 32, "Project 1");
+            app.projects.push(defaultProject);
+            app.activeProjectIndex = 0;
+            
+            gridWInput.value = defaultProject.width;
+            gridHInput.value = defaultProject.height;
+
+            renderWorkspace();
+            app.activeProject.pushState();
+        }
+
+        brushSizeSlider.addEventListener('input', (e) => {
+            app.brushSize = parseInt(e.target.value);
+            brushSizeLabel.innerText = app.brushSize + 'px';
+        });
+
+        function setCanvasSize(w, h, bypassWarning = false) {
+            const project = app.activeProject;
+            if (!project) return;
+
+            if (!bypassWarning && !confirm("Changing canvas size will clear your current sprite. Continue?")) {
+                gridWInput.value = project.width;
+                gridHInput.value = project.height;
+                return;
+            }
+            
+            project.width = parseInt(w);
+            project.height = parseInt(h);
+            gridWInput.value = project.width;
+            gridHInput.value = project.height;
+
+            project.layers.forEach(layer => {
+                layer.canvas.width = project.width;
+                layer.canvas.height = project.height;
+                layer.clear();
+            });
+
+            project.historyStack = [];
+            project.historyIndex = -1;
+            
+            renderWorkspace();
+            project.pushState();
+        }
+
+        function applyCustomSize() {
+            setCanvasSize(gridWInput.value, gridHInput.value);
+        }
+
+        function updateActiveSwatches() {
+            document.querySelectorAll('.color-swatch').forEach(s => {
+                if (s.dataset.color && s.dataset.color.toUpperCase() === app.color.toUpperCase()) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        }
+
+        function setColor(hex) {
+            app.color = hex.toUpperCase();
+            colorWheel.value = app.color;
+            hexInput.value = app.color;
+            updateActiveSwatches();
+            
+            if (app.tool === 'eraser') setTool('pencil'); 
+        }
+
+        function addRecentColor(hex) {
+            hex = hex.toUpperCase();
+            app.recentColors = app.recentColors.filter(c => c !== hex);
+            app.recentColors.unshift(hex);
+            if (app.recentColors.length > 6) app.recentColors.pop();
+            renderRecentColors();
+        }
+
+        function renderRecentColors() {
+            recentPalette.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                if (i < app.recentColors.length) {
+                    const hex = app.recentColors[i];
+                    const isActive = (app.color === hex) ? 'active' : '';
+                    recentPalette.innerHTML += `<div class="color-swatch ${isActive}" style="background: ${hex};" data-color="${hex}"></div>`;
+                } else {
+                    recentPalette.innerHTML += `<div class="color-swatch recent-empty"></div>`;
+                }
+            }
+        }
+
+        colorWheel.addEventListener('input', (e) => setColor(e.target.value));
+        colorWheel.addEventListener('change', (e) => addRecentColor(e.target.value));
+
+        hexInput.addEventListener('change', (e) => {
+            let val = e.target.value.trim();
+            if (!val.startsWith('#')) val = '#' + val;
+            
+            if (/^#[0-9A-F]{6}$/i.test(val)) {
+                setColor(val);
+                addRecentColor(val);
+            } else {
+                hexInput.value = app.color; 
+            }
+        });
+
+        function handleSwatchClick(e) {
+            const swatch = e.target.closest('.color-swatch');
+            if (!swatch || !swatch.dataset.color) return;
+            setColor(swatch.dataset.color);
+            addRecentColor(swatch.dataset.color);
+        }
+        
+        presetPalette.addEventListener('click', handleSwatchClick);
+        recentPalette.addEventListener('click', handleSwatchClick);
+
+        renderRecentColors();
+
+        function setTool(toolName) {
+            app.tool = toolName;
+            drawToolBtns.forEach(b => {
+                if(b.dataset.tool === toolName) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+        }
+
+        function triggerAction(actionName) {
+            const project = app.activeProject;
+            if(!project) return;
+
+            if(actionName === 'clear') {
+                project.activeLayer.clear();
+                project.pushState();
+            } else if (actionName === 'undo') {
+                project.undo();
+            } else if (actionName === 'redo') {
+                project.redo();
+            }
+        }
+
+        drawToolBtns.forEach(btn => btn.addEventListener('click', () => setTool(btn.dataset.tool)));
+        actionBtns.forEach(btn => btn.addEventListener('click', () => triggerAction(btn.dataset.action)));
+
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement === hexInput || document.activeElement === gridWInput || document.activeElement === gridHInput) return;
+
+            const project = app.activeProject;
+
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key.toLowerCase() === 'z') {
+                    if (e.shiftKey) project?.redo();
+                    else project?.undo();
+                    e.preventDefault();
+                    return;
+                }
+                if (e.key.toLowerCase() === 'y') {
+                    project?.redo();
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            if(e.key.toLowerCase() === 'p') setTool('pencil');
+            if(e.key.toLowerCase() === 'e') setTool('eraser');
+            if(e.key.toLowerCase() === 'f') setTool('fill');
+        });
+
+        function getGridCoordinates(e) {
+            const rect = workspace.getBoundingClientRect();
+            const project = app.activeProject;
+            const scaleX = project.width / rect.width;
+            const scaleY = project.height / rect.height;
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
+            return { x, y };
+        }
+
+        function applyTool(x, y) {
+            const project = app.activeProject;
+            if (!project) return;
+
+            if (app.tool === 'fill') {
+                if (x >= 0 && x < project.width && y >= 0 && y < project.height) {
+                    floodFill(x, y, app.color);
+                }
+                return;
+            }
+
+            const ctx = project.activeLayer.ctx;
+            const offsetStart = -Math.floor(app.brushSize / 2);
+            const offsetEnd = Math.floor((app.brushSize - 1) / 2);
+
+            for (let ix = offsetStart; ix <= offsetEnd; ix++) {
+                for (let iy = offsetStart; iy <= offsetEnd; iy++) {
+                    const px = x + ix;
+                    const py = y + iy;
+
+                    if (px >= 0 && px < project.width && py >= 0 && py < project.height) {
+                        if (app.tool === 'pencil') {
+                            ctx.fillStyle = app.color;
+                            ctx.fillRect(px, py, 1, 1);
+                        } else if (app.tool === 'eraser') {
+                            ctx.clearRect(px, py, 1, 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        workspace.addEventListener('mousedown', (e) => {
+            app.isDrawing = true;
+            const { x, y } = getGridCoordinates(e);
+            applyTool(x, y);
+        });
+
+        workspace.addEventListener('mousemove', (e) => {
+            if (!app.isDrawing) return;
+            if (app.tool === 'fill') return; 
+            const { x, y } = getGridCoordinates(e);
+            applyTool(x, y);
+        });
+
+        workspace.addEventListener('mouseup', () => {
+            if (app.isDrawing) {
+                app.isDrawing = false;
+                app.activeProject?.pushState(); 
+            }
+        });
+        
+        workspace.addEventListener('mouseleave', () => {
+            if (app.isDrawing) {
+                app.isDrawing = false;
+                app.activeProject?.pushState(); 
+            }
+        });
+
+        function hexToRgba(hex) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return [r, g, b, 255];
+        }
+
+        function floodFill(startX, startY, fillColorHex) {
+            const project = app.activeProject;
+            if (!project) return;
+
+            const ctx = project.activeLayer.ctx;
+            const imgData = ctx.getImageData(0, 0, project.width, project.height);
+            const data = imgData.data;
+            const fillRgba = hexToRgba(fillColorHex);
+
+            const startPos = (startY * project.width + startX) * 4;
+            const startR = data[startPos];
+            const startG = data[startPos + 1];
+            const startB = data[startPos + 2];
+            const startA = data[startPos + 3];
+
+            if (startR === fillRgba[0] && startG === fillRgba[1] && startB === fillRgba[2] && startA === fillRgba[3]) return;
+
+            function matchStartColor(x, y) {
+                if (x < 0 || x >= project.width || y < 0 || y >= project.height) return false;
+                const pos = (y * project.width + x) * 4;
+                return data[pos] === startR && data[pos+1] === startG && data[pos+2] === startB && data[pos+3] === startA;
+            }
+
+            const stack = [[startX, startY]];
+            
+            while (stack.length > 0) {
+                const [x, y] = stack.pop();
+                const pos = (y * project.width + x) * 4;
+
+                data[pos] = fillRgba[0];
+                data[pos+1] = fillRgba[1];
+                data[pos+2] = fillRgba[2];
+                data[pos+3] = fillRgba[3];
+
+                if (matchStartColor(x + 1, y)) stack.push([x + 1, y]);
+                if (matchStartColor(x - 1, y)) stack.push([x - 1, y]);
+                if (matchStartColor(x, y + 1)) stack.push([x, y + 1]);
+                if (matchStartColor(x, y - 1)) stack.push([x, y - 1]);
+            }
+
+            ctx.putImageData(imgData, 0, 0);
+            project.pushState(); 
+        }
+
+        function saveSprite() {
+            const project = app.activeProject;
+            if (!project) return;
+
+            const ctx = project.activeLayer.ctx;
+            const imgData = ctx.getImageData(0, 0, project.width, project.height).data;
+            const pixels = [];
+            
+            for(let i = 0; i < imgData.length; i += 4) {
+                const r = imgData[i], g = imgData[i+1], b = imgData[i+2], a = imgData[i+3];
+                if(a === 0) {
+                    pixels.push(null);
+                } else {
+                    const hex = "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
+                    pixels.push(hex);
+                }
+            }
+
+            const payload = {
+                format: ">L_SPRITE_DATA",
+                version: "1.1",
+                grid_width: project.width,
+                grid_height: project.height,
+                timestamp: new Date().toISOString(),
+                pixels: pixels
+            };
+
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `project_${Date.now()}.ldevsprite`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadSprite(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if(data.format !== ">L_SPRITE_DATA") {
+                        alert("Error: Invalid or corrupted .ldevsprite file.");
+                        return;
+                    }
+
+                    const w = data.grid_width || data.grid_size;
+                    const h = data.grid_height || data.grid_size;
+
+                    setCanvasSize(w, h, true);
+                    const project = app.activeProject;
+                    const ctx = project.activeLayer.ctx;
+                    const pixels = data.pixels;
+                    
+                    for(let i = 0; i < pixels.length; i++) {
+                        if(pixels[i] !== null) {
+                            const x = i % project.width;
+                            const y = Math.floor(i / project.width);
+                            ctx.fillStyle = pixels[i];
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                    project.pushState();
+
+                } catch(err) {
+                    alert("Error: Failed to parse .ldevsprite file.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; 
+        }
+
+        function exportPNG() {
+            const project = app.activeProject;
+            if (!project) return;
+            
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = project.width;
+            exportCanvas.height = project.height;
+            const eCtx = exportCanvas.getContext('2d');
+            
+            project.layers.forEach(layer => {
+                if (layer.visible) {
+                    eCtx.drawImage(layer.canvas, 0, 0);
+                }
+            });
+
+            const dataURL = exportCanvas.toDataURL("image/png");
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = `sprite_${Date.now()}.png`;
+            a.click();
+        }
+
+        init();
+
+    </script>
+</body>
+</html>
