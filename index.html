@@ -8,6 +8,7 @@
         :root {
             --bg-dark: #1e1e1e;
             --bg-panel: #252526;
+            --bg-topbar: #333333;
             --border-color: #3c3c3c;
             --text-main: #d4d4d4;
             --text-dim: #858585;
@@ -27,66 +28,124 @@
             overflow: hidden; user-select: none;
         }
 
-        .studio-layout {
-            flex-grow: 1;
+        .top-bar {
+            height: 40px;
+            background-color: var(--bg-topbar);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
-            border-top: 1px solid var(--border-color);
+            align-items: center;
+            padding: 0 15px;
+            justify-content: space-between;
+            flex-shrink: 0;
         }
 
-        .sidebar {
-            width: 260px;
+        .brand {
+            font-weight: bold;
+            color: var(--syntax-blue);
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        .menu-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .main-layout {
+            flex-grow: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .left-toolbar {
+            width: 50px;
             background-color: var(--bg-panel);
             border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column;
-            padding: 15px; box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            gap: 10px;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .toolbar-divider {
+            width: 30px;
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 5px 0;
+        }
+
+        .right-panel {
+            width: 280px;
+            background-color: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-sizing: border-box;
             gap: 20px;
             overflow-y: auto;
+            flex-shrink: 0;
         }
 
         .panel-header {
             font-size: 12px; color: var(--text-dim);
             text-transform: uppercase; letter-spacing: 1px;
-            margin-bottom: 10px; display: flex; justify-content: space-between;
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
         }
 
         .tools-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
         }
         .tools-grid-3 {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+            display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center;
         }
+        
         .tool-btn {
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 10px; border-radius: 4px;
+            padding: 8px 10px; border-radius: 4px;
             cursor: pointer; text-align: center;
-            font-size: 16px; transition: background 0.2s;
+            font-size: 14px; transition: background 0.2s, border-color 0.2s;
         }
         .tool-btn:hover { background: rgba(255,255,255,0.1); }
         .tool-btn.active { 
-            background: var(--btn-active); 
-            border-color: transparent; 
-            box-shadow: 0 0 10px rgba(0, 122, 204, 0.5);
+            background: rgba(0, 122, 204, 0.2);
+            border-color: var(--btn-active); 
         }
 
-        .io-btn {
-            font-size: 13px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
+        .icon-btn {
+            width: 36px; height: 36px;
+            padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 16px;
         }
-        .io-btn:hover { background: rgba(255,255,255,0.15); color: white; }
-        .export-btn {
-            grid-column: span 2; 
+
+        .top-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .top-btn:hover {
+            background: rgba(255,255,255,0.1);
         }
 
         input[type=number].tool-btn {
             background: rgba(0,0,0,0.2);
             color: var(--syntax-blue);
             font-family: inherit;
-            font-size: 14px;
-            text-align: center;
-            outline: none;
             padding: 8px;
+            outline: none;
         }
         input[type=number].tool-btn:focus { border-color: var(--syntax-blue); }
 
@@ -116,6 +175,7 @@
         #color-wheel {
             width: 40px; height: 32px; border: 1px solid var(--border-color);
             border-radius: 4px; cursor: pointer; padding: 0; background: var(--bg-panel);
+            flex-shrink: 0;
         }
         #color-wheel::-webkit-color-swatch-wrapper { padding: 2px; }
         #color-wheel::-webkit-color-swatch { border: 1px solid var(--border-color); border-radius: 2px; }
@@ -146,6 +206,19 @@
             cursor: default;
         }
 
+        .layer-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 4px;
+            cursor: pointer; border: 1px solid transparent; font-size: 13px;
+        }
+        .layer-item:hover { background: rgba(255,255,255,0.1); }
+        .layer-item.active { border-color: var(--btn-active); background: rgba(0, 122, 204, 0.2); }
+        .layer-btn {
+            background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 2px 4px;
+            font-size: 14px;
+        }
+        .layer-btn:hover { color: var(--text-main); }
+
         .canvas-container {
             flex-grow: 1;
             display: flex; justify-content: center; align-items: center;
@@ -153,6 +226,7 @@
             padding: 40px; overflow: auto;
             background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
             background-size: 32px 32px;
+            position: relative;
         }
 
         .workspace-wrapper {
@@ -164,6 +238,7 @@
                 linear-gradient(-45deg, #2d2d2d 25%, transparent 25%),
                 linear-gradient(45deg, transparent 75%, #2d2d2d 75%),
                 linear-gradient(-45deg, transparent 75%, #2d2d2d 75%);
+            flex-shrink: 0;
         }
 
         .sprite-layer {
@@ -179,49 +254,57 @@
 </head>
 <body>
 
-    <div class="studio-layout">
-        
-        <aside class="sidebar">
-            <section>
-                <div class="panel-header">File_I/O</div>
-                <div class="tools-grid">
-                    <button class="tool-btn io-btn" onclick="saveSprite()" style="color: var(--syntax-green);" title="Save Project (.ldevsprite)">💾 Save</button>
-                    <button class="tool-btn io-btn" onclick="document.getElementById('file-upload').click()" style="color: var(--syntax-orange);" title="Load Project (.ldevsprite)">📂 Load</button>
-                    <button class="tool-btn io-btn export-btn" onclick="exportPNG()" style="color: var(--syntax-purple);" title="Export to PNG">🖼️ Export PNG</button>
-                    <input type="file" id="file-upload" accept=".ldevsprite" style="display: none;" onchange="loadSprite(event)">
-                </div>
-            </section>
+    <header class="top-bar">
+        <div class="brand">>L SPRITE STUDIO</div>
+        <div class="menu-group">
+            <button class="top-btn" onclick="document.getElementById('file-upload').click()" style="color: var(--syntax-orange);">📂 Load</button>
+            <button class="top-btn" onclick="saveSprite()" style="color: var(--syntax-green);">💾 Save</button>
+            <button class="top-btn" onclick="exportPNG()" style="color: var(--syntax-purple);">🖼️ Export PNG</button>
+            <input type="file" id="file-upload" accept=".ldevsprite" style="display: none;" onchange="loadSprite(event)">
+        </div>
+    </header>
 
+    <div class="main-layout">
+        
+        <aside class="left-toolbar">
+            <button class="tool-btn icon-btn draw-tool-btn active" data-tool="pencil" title="Pencil (P)">✎</button>
+            <button class="tool-btn icon-btn draw-tool-btn" data-tool="eraser" title="Eraser (E)">💧</button>
+            <button class="tool-btn icon-btn draw-tool-btn" data-tool="fill" title="Fill Bucket (F)">🌅</button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button class="tool-btn icon-btn action-btn" data-action="undo" title="Undo (Ctrl+Z)">↶</button>
+            <button class="tool-btn icon-btn action-btn" data-action="redo" title="Redo (Ctrl+Y)">↷</button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button class="tool-btn icon-btn action-btn" data-action="zoom-in" title="Zoom In (+)">🔍<span style="font-size:10px;position:absolute;margin-top:8px;margin-left:8px;">+</span></button>
+            <button class="tool-btn icon-btn action-btn" data-action="zoom-out" title="Zoom Out (-)">🔍<span style="font-size:10px;position:absolute;margin-top:8px;margin-left:8px;">-</span></button>
+            <button class="tool-btn icon-btn action-btn" data-action="zoom-fit" title="Fit Screen (0)">🖵</button>
+            <button class="tool-btn icon-btn action-btn" data-action="zoom-reset" title="Actual Size (1)">1:1</button>
+
+            <div class="toolbar-divider"></div>
+
+            <button class="tool-btn icon-btn action-btn" data-action="clear" title="Clear Canvas" style="color: var(--syntax-orange);">🗑</button>
+        </aside>
+
+        <main class="canvas-container">
+            <div id="workspace" class="workspace-wrapper"></div>
+        </main>
+
+        <aside class="right-panel">
             <section>
-                <div class="panel-header">Canvas_Dimensions</div>
-                <div class="tools-grid-3" style="grid-template-columns: 1fr 1fr auto; align-items: center;">
+                <div class="panel-header">Canvas Size</div>
+                <div class="tools-grid-3">
                     <input type="number" id="grid-w-input" class="tool-btn" value="32" min="1" max="128" title="Width">
                     <input type="number" id="grid-h-input" class="tool-btn" value="32" min="1" max="128" title="Height">
-                    <button class="tool-btn io-btn" onclick="applyCustomSize()" style="color: var(--syntax-blue); padding: 10px;">Apply</button>
+                    <button class="tool-btn" onclick="applyCustomSize()" style="color: var(--syntax-blue); padding: 8px;">Apply</button>
                 </div>
-            </section>
-
-            <section>
-                <div class="panel-header">History</div>
-                <div class="tools-grid">
-                    <button class="tool-btn action-btn" data-action="undo" title="Undo (Ctrl+Z)" style="color: var(--text-dim);">↶ Undo</button>
-                    <button class="tool-btn action-btn" data-action="redo" title="Redo (Ctrl+Y)" style="color: var(--text-dim);">↷ Redo</button>
-                </div>
-            </section>
-
-            <section>
-                <div class="panel-header">Execution_Tools</div>
-                <div class="tools-grid-3">
-                    <button class="tool-btn active draw-tool-btn" data-tool="pencil" title="Pencil (P)">✎</button>
-                    <button class="tool-btn draw-tool-btn" data-tool="eraser" title="Eraser (E)">💧</button>
-                    <button class="tool-btn draw-tool-btn" data-tool="fill" title="Fill Bucket (F)">🌅</button>
-                </div>
-                <button class="tool-btn action-btn" data-action="clear" title="Clear Canvas" style="width: 100%; margin-top: 8px;">🗑 Clear Canvas</button>
             </section>
 
             <section>
                 <div class="panel-header">
-                    Brush_Size 
+                    Brush Size 
                     <span id="brush-size-label" style="color: var(--syntax-blue);">1px</span>
                 </div>
                 <div style="padding: 0 5px;">
@@ -230,17 +313,17 @@
             </section>
 
             <section>
-                <div class="panel-header">Custom_Color</div>
+                <div class="panel-header">Color</div>
                 <div class="color-picker-row">
                     <input type="color" id="color-wheel" value="#000000" title="Open Color Wheel">
                     <input type="text" id="hex-input" value="#000000" maxlength="7" title="Hex Code">
                 </div>
 
-                <div class="panel-header">Recently_Used</div>
+                <div class="panel-header" style="margin-top: 15px;">Recent</div>
                 <div class="palette-grid" id="recent-palette" style="margin-bottom: 15px;">
                 </div>
 
-                <div class="panel-header">Presets</div>
+                <div class="panel-header">Swatches</div>
                 <div class="palette-grid" id="palette">
                     <div class="color-swatch active" style="background: #000000;" data-color="#000000"></div>
                     <div class="color-swatch" style="background: #1D2B53;" data-color="#1D2B53"></div>
@@ -261,11 +344,14 @@
                 </div>
             </section>
 
+            <section style="flex-grow: 1; display: flex; flex-direction: column;">
+                <div class="panel-header">
+                    Layers 
+                    <button class="tool-btn" style="padding: 2px 6px; font-size: 11px; border-color: var(--border-color);" onclick="addLayer()">+ New</button>
+                </div>
+                <div id="layer-list" style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1;"></div>
+            </section>
         </aside>
-
-        <main class="canvas-container">
-            <div id="workspace" class="workspace-wrapper"></div>
-        </main>
 
     </div>
 
@@ -278,6 +364,8 @@
             brushSize: 1,
             recentColors: [],
             isDrawing: false,
+            zoom: 16,
+            zoomFit: true,
             
             get activeProject() {
                 return this.activeProjectIndex >= 0 ? this.projects[this.activeProjectIndex] : null;
@@ -375,20 +463,104 @@
         const gridHInput = document.getElementById('grid-h-input');
         const brushSizeSlider = document.getElementById('brush-size');
         const brushSizeLabel = document.getElementById('brush-size-label');
+        const canvasContainer = document.querySelector('.canvas-container');
+        const layerList = document.getElementById('layer-list');
+
+        function renderLayerPanel() {
+            const project = app.activeProject;
+            if(!project) return;
+            
+            layerList.innerHTML = '';
+            
+            for (let i = project.layers.length - 1; i >= 0; i--) {
+                const layer = project.layers[i];
+                const item = document.createElement('div');
+                item.className = `layer-item ${i === project.activeLayerIndex ? 'active' : ''}`;
+                
+                item.onclick = (e) => {
+                    if(!e.target.closest('.layer-btn')) {
+                        project.activeLayerIndex = i;
+                        renderLayerPanel();
+                    }
+                };
+
+                const nameSpan = document.createElement('span');
+                nameSpan.innerText = layer.name;
+                nameSpan.style.flexGrow = '1';
+                nameSpan.style.overflow = 'hidden';
+                nameSpan.style.textOverflow = 'ellipsis';
+                nameSpan.style.whiteSpace = 'nowrap';
+
+                const controlsDiv = document.createElement('div');
+                controlsDiv.style.display = 'flex';
+                controlsDiv.style.gap = '4px';
+
+                const visBtn = document.createElement('button');
+                visBtn.className = 'layer-btn';
+                visBtn.innerText = layer.visible ? '👁' : '✖';
+                visBtn.title = 'Toggle Visibility';
+                visBtn.onclick = () => {
+                    layer.visible = !layer.visible;
+                    renderWorkspace();
+                    renderLayerPanel();
+                };
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'layer-btn';
+                delBtn.innerText = '🗑';
+                delBtn.title = 'Delete Layer';
+                delBtn.onclick = () => {
+                    if (project.layers.length > 1) {
+                        project.layers.splice(i, 1);
+                        if (project.activeLayerIndex >= project.layers.length) {
+                            project.activeLayerIndex = project.layers.length - 1;
+                        }
+                        renderWorkspace();
+                        renderLayerPanel();
+                        project.pushState();
+                    }
+                };
+
+                controlsDiv.appendChild(visBtn);
+                if (project.layers.length > 1) controlsDiv.appendChild(delBtn);
+                
+                item.appendChild(nameSpan);
+                item.appendChild(controlsDiv);
+                layerList.appendChild(item);
+            }
+        }
+
+        function addLayer() {
+            const project = app.activeProject;
+            if(!project) return;
+            
+            const newLayer = new Layer(project.width, project.height, `Layer ${project.layers.length + 1}`);
+            project.layers.push(newLayer);
+            project.activeLayerIndex = project.layers.length - 1;
+            
+            renderWorkspace();
+            renderLayerPanel();
+            project.pushState();
+        }
 
         function renderWorkspace() {
             const project = app.activeProject;
             if (!project) return;
 
-            workspace.style.width = '512px';
-            workspace.style.height = '512px';
+            if (app.zoomFit) {
+                const availableW = canvasContainer.clientWidth - 80;
+                const availableH = canvasContainer.clientHeight - 80;
+                const scaleW = availableW / project.width;
+                const scaleH = availableH / project.height;
+                app.zoom = Math.max(1, Math.min(scaleW, scaleH));
+            }
 
-            const maxDim = Math.max(project.width, project.height);
-            const pxSize = 512 / maxDim; 
-            const checkerSize = pxSize * 2;
-            
+            workspace.style.width = `${project.width * app.zoom}px`;
+            workspace.style.height = `${project.height * app.zoom}px`;
+
+            const checkerSize = app.zoom * 2;
             workspace.style.backgroundSize = `${checkerSize}px ${checkerSize}px`;
-            workspace.style.backgroundPosition = `0 0, 0 ${pxSize}px, ${pxSize}px ${pxSize}px, ${pxSize}px 0`;
+            workspace.style.backgroundPosition = `0 0, 0 ${app.zoom}px, ${app.zoom}px ${app.zoom}px, ${app.zoom}px 0`;
 
             workspace.innerHTML = '';
             project.layers.forEach(layer => {
@@ -406,6 +578,7 @@
             gridHInput.value = defaultProject.height;
 
             renderWorkspace();
+            renderLayerPanel();
             app.activeProject.pushState();
         }
 
@@ -414,11 +587,17 @@
             brushSizeLabel.innerText = app.brushSize + 'px';
         });
 
+        window.addEventListener('resize', () => {
+            if (app.zoomFit) {
+                renderWorkspace();
+            }
+        });
+
         function setCanvasSize(w, h, bypassWarning = false) {
             const project = app.activeProject;
             if (!project) return;
 
-            if (!bypassWarning && !confirm("Changing canvas size will clear your current sprite. Continue?")) {
+            if (!bypassWarning && !confirm("Changing canvas size will clear your current sprite and all layers. Continue?")) {
                 gridWInput.value = project.width;
                 gridHInput.value = project.height;
                 return;
@@ -439,6 +618,7 @@
             project.historyIndex = -1;
             
             renderWorkspace();
+            renderLayerPanel();
             project.pushState();
         }
 
@@ -532,6 +712,23 @@
                 project.undo();
             } else if (actionName === 'redo') {
                 project.redo();
+            } else if (actionName === 'zoom-in') {
+                app.zoomFit = false;
+                app.zoom *= 1.25;
+                if(app.zoom > 100) app.zoom = 100;
+                renderWorkspace();
+            } else if (actionName === 'zoom-out') {
+                app.zoomFit = false;
+                app.zoom /= 1.25;
+                if(app.zoom < 0.25) app.zoom = 0.25;
+                renderWorkspace();
+            } else if (actionName === 'zoom-reset') {
+                app.zoomFit = false;
+                app.zoom = 1;
+                renderWorkspace();
+            } else if (actionName === 'zoom-fit') {
+                app.zoomFit = true;
+                renderWorkspace();
             }
         }
 
@@ -555,6 +752,22 @@
                     e.preventDefault();
                     return;
                 }
+                if (e.key === '=' || e.key === '+') {
+                    triggerAction('zoom-in');
+                    e.preventDefault(); return;
+                }
+                if (e.key === '-') {
+                    triggerAction('zoom-out');
+                    e.preventDefault(); return;
+                }
+                if (e.key === '0') {
+                    triggerAction('zoom-fit');
+                    e.preventDefault(); return;
+                }
+                if (e.key === '1') {
+                    triggerAction('zoom-reset');
+                    e.preventDefault(); return;
+                }
             }
 
             if(e.key.toLowerCase() === 'p') setTool('pencil');
@@ -575,6 +788,7 @@
         function applyTool(x, y) {
             const project = app.activeProject;
             if (!project) return;
+            if (!project.activeLayer.visible) return;
 
             if (app.tool === 'fill') {
                 if (x >= 0 && x < project.width && y >= 0 && y < project.height) {
@@ -686,27 +900,32 @@
             const project = app.activeProject;
             if (!project) return;
 
-            const ctx = project.activeLayer.ctx;
-            const imgData = ctx.getImageData(0, 0, project.width, project.height).data;
-            const pixels = [];
-            
-            for(let i = 0; i < imgData.length; i += 4) {
-                const r = imgData[i], g = imgData[i+1], b = imgData[i+2], a = imgData[i+3];
-                if(a === 0) {
-                    pixels.push(null);
-                } else {
-                    const hex = "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
-                    pixels.push(hex);
+            const layerData = project.layers.map(layer => {
+                const imgData = layer.ctx.getImageData(0, 0, project.width, project.height).data;
+                const pixels = [];
+                for(let i = 0; i < imgData.length; i += 4) {
+                    const r = imgData[i], g = imgData[i+1], b = imgData[i+2], a = imgData[i+3];
+                    if(a === 0) {
+                        pixels.push(null);
+                    } else {
+                        const hex = "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
+                        pixels.push(hex);
+                    }
                 }
-            }
+                return {
+                    name: layer.name,
+                    visible: layer.visible,
+                    pixels: pixels
+                };
+            });
 
             const payload = {
                 format: ">L_SPRITE_DATA",
-                version: "1.1",
+                version: "1.2",
                 grid_width: project.width,
                 grid_height: project.height,
                 timestamp: new Date().toISOString(),
-                pixels: pixels
+                layers: layerData
             };
 
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -738,17 +957,38 @@
 
                     setCanvasSize(w, h, true);
                     const project = app.activeProject;
-                    const ctx = project.activeLayer.ctx;
-                    const pixels = data.pixels;
-                    
-                    for(let i = 0; i < pixels.length; i++) {
-                        if(pixels[i] !== null) {
-                            const x = i % project.width;
-                            const y = Math.floor(i / project.width);
-                            ctx.fillStyle = pixels[i];
-                            ctx.fillRect(x, y, 1, 1);
+
+                    if (data.version === "1.2" && data.layers) {
+                        project.layers = data.layers.map((lData, index) => {
+                            const layer = new Layer(w, h, lData.name || `Layer ${index + 1}`);
+                            layer.visible = lData.visible !== false;
+                            const pixels = lData.pixels;
+                            for(let i = 0; i < pixels.length; i++) {
+                                if(pixels[i] !== null) {
+                                    const x = i % w;
+                                    const y = Math.floor(i / w);
+                                    layer.ctx.fillStyle = pixels[i];
+                                    layer.ctx.fillRect(x, y, 1, 1);
+                                }
+                            }
+                            return layer;
+                        });
+                        project.activeLayerIndex = project.layers.length - 1;
+                    } else {
+                        const pixels = data.pixels;
+                        const ctx = project.activeLayer.ctx;
+                        for(let i = 0; i < pixels.length; i++) {
+                            if(pixels[i] !== null) {
+                                const x = i % w;
+                                const y = Math.floor(i / w);
+                                ctx.fillStyle = pixels[i];
+                                ctx.fillRect(x, y, 1, 1);
+                            }
                         }
                     }
+                    
+                    renderWorkspace();
+                    renderLayerPanel();
                     project.pushState();
 
                 } catch(err) {
